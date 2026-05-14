@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppMint - Web2App Builder</title>
+    <style>
+        :root { --primary: #00d1b2; --dark: #1a1a1a; --bg: #0f0f0f; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar - Panel Sterowania */
+        .sidebar { width: 400px; background: var(--dark); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 10; }
+        h1 { font-size: 24px; color: var(--primary); margin-bottom: 5px; }
+        p { color: #888; font-size: 13px; margin-bottom: 25px; }
+
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+        input, textarea, select { width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: white; padding: 12px; margin-bottom: 20px; box-sizing: border-box; }
+        textarea { height: 200px; font-family: 'Courier New', monospace; font-size: 12px; resize: none; }
+
+        .btn-build { background: var(--primary); color: var(--dark); border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .btn-build:hover { transform: scale(1.02); filter: brightness(1.1); }
+
+        /* Main Content - Podgląd Live */
+        .preview-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); }
+        .phone-mockup { width: 320px; height: 600px; background: #000; border: 12px solid #333; border-radius: 40px; box-shadow: 0 0 50px rgba(0,0,0,0.8); position: relative; overflow: hidden; }
+        .phone-screen { width: 100%; height: 100%; background: white; border: none; }
+        .status-bar { height: 25px; background: #333; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .status-bar::after { content: ''; width: 60px; height: 4px; background: #555; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>AppMint Builder</h1>
+        <p>Konwertuj Web do App (Web2App)</p>
+
+        <label>Nazwa Aplikacji</label>
+        <input type="text" id="appName" placeholder="np. My NFC App">
+
+        <label>Kod HTML / Web App</label>
+        <textarea id="htmlInput" placeholder="Wklej tutaj kod HTML/JS swojej aplikacji..."></textarea>
+
+        <label>Wtyczki (Autodetekcja)</label>
+        <select id="pluginSelect">
+            <option value="none">Brak (Tylko Web)</option>
+            <option value="nfc" selected>NFC Support (Włączone)</option>
+        </select>
+
+        <button class="btn-build" onclick="triggerBuild()">GENERUJ PLIK APK</button>
+        
+        <div id="log" style="margin-top: 20px; font-size: 12px; color: #5cb85c;"></div>
+    </div>
+
+    <div class="preview-area">
+        <div style="margin-bottom: 15px; color: #888;">PODGLĄD NA ŻYWO (LIVE PREVIEW)</div>
+        <div class="phone-mockup">
+            <div class="status-bar"></div>
+            <iframe id="livePreview" class="phone-screen"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const htmlInput = document.getElementById('htmlInput');
+        const preview = document.getElementById('livePreview');
+        const log = document.getElementById('log');
+
+        // Funkcja podglądu na żywo
+        htmlInput.addEventListener('input', () => {
+            const content = htmlInput.value;
+            const doc = preview.contentWindow.document;
+            doc.open();
+            doc.write(content);
+            doc.close();
+        });
+
+        // Symulacja wysłania do GitHub Actions
+        function triggerBuild() {
+            const name = document.getElementById('appName').value;
+            if(!name) { alert("Podaj nazwę aplikacji!"); return; }
+            
+            log.innerText = "Kompletowanie plików... Wysyłanie do AppMint Engine (GitHub)...";
+            
+            // W prawdziwym Builderze tutaj wywołujemy GitHub API
+            setTimeout(() => {
+                log.innerText = "Sukces! Sprawdź zakładkę ACTIONS w swoim repozytorium, aby pobrać APK.";
+            }, 3000);
+        }
+
+        // Domyślny szablon startowy
+        htmlInput.value = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { text-align: center; padding-top: 50px; font-family: sans-serif; }
+        .icon { font-size: 50px; }
+    </style>
+</head>
+<body>
+    <div class="icon">📱</div>
+    <h2>Moja nowa aplikacja</h2>
+    <p>Ten kod zostanie zamieniony w APK</p>
+    <button onclick="alert('Działa!')">Kliknij mnie</button>
+</body>
+</html>`;
+        htmlInput.dispatchEvent(new Event('input'));
+    </script>
+</body>
+</html>
