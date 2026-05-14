@@ -1,0 +1,63 @@
+name: Build Android APK (Pancerny Generator)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npm install phonegap-nfc
+          mkdir -p www
+          echo "<html><body><h1>NFC App</h1></body></html>" > www/index.html
+
+      - name: Capacitor Add & Sync
+        run: |
+          npx cap add android
+          
+          # 1. Poprawka wersji SDK (aby nie było błędu "stara wersja")
+          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/' android/variables.gradle
+          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/' android/variables.gradle
+          
+          # 2. FIX BŁĘDU ZE ZDJĘCIA (Namespace dla wtyczek Cordova)
+          # Ten skrypt wstrzykuje wymagany namespace do build.gradle wtyczki NFC
+          echo "android { namespace 'com.chariotsolutions.nfc.plugin' }" >> android/capacitor-cordova-android-plugins/build.gradle
+          
+          # 3. Dodanie uprawnień NFC
+          sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.NFC" />' android/app/src/main/AndroidManifest.xml
+          sed -i '/<\/manifest>/i <uses-feature android:name="android.hardware.nfc" android:required="true" />' android/app/src/main/AndroidManifest.xml
+          
+          npx cap sync android
+
+      - name: Build Android App (APK)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
