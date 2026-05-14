@@ -1,0 +1,36 @@
+<script>
+    async function triggerBuild() {
+        const name = document.getElementById('appName').value;
+        const id = document.getElementById('appId').value;
+        const codeContent = document.getElementById('code').value;
+        const githubToken = "TWÓJ_TOKEN_GITHUB"; // Tutaj wpiszesz swój token
+        const repoOwner = "TWÓJ_NICK";
+        const repoName = "NAZWA_REPOZYTORIUM";
+
+        const log = document.getElementById('log');
+        log.innerText = "Łączenie z silnikiem appbuilderPRO...";
+
+        const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/actions/workflows/app-generator.yml/dispatches`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ref: 'main',
+                inputs: {
+                    app_name: name,
+                    app_id: id,
+                    html_code: btoa(codeContent) // Kodowanie Base64 dla bezpiecznego transferu
+                }
+            })
+        });
+
+        if (response.ok) {
+            log.innerText = "PROCES ROZPOCZĘTY! Wejdź w zakładkę Actions na GitHub, aby pobrać APK.";
+        } else {
+            log.innerText = "Błąd połączenia. Sprawdź token i nazwę repozytorium.";
+        }
+    }
+</script>
