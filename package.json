@@ -1,8 +1,0 @@
-{
-  "name": "appmint-builder-engine",
-  "version": "2.0.0",
-  "private": true,
-  "scripts": {
-    "build": "npx cap sync"
-  }
-}
